@@ -439,7 +439,7 @@ CONTAINS
         DO j = jts , MIN(jde-1,jte)
            DO i = its , MIN(ide-1,ite)
               IF (grid%xland(i,j) .lt. 1.5) THEN
-                 grid%vegfra(i,j) = 0.5
+                 grid%vegfra(i,j) = 50.
                  grid%canwat(i,j) = 0.
                  grid%ivgtyp(i,j) = 18
                  grid%isltyp(i,j) = 8
@@ -534,7 +534,7 @@ CONTAINS
         DO j = jts , MIN(jde-1,jte)
            DO i = its , MIN(ide-1,ite)
               IF (grid%xland(i,j) .lt. 1.5) THEN
-                 grid%vegfra(i,j) = 0.5
+                 grid%vegfra(i,j) = 50.
                  grid%canwat(i,j) = 0.
                  grid%ivgtyp(i,j) = 18
                  grid%isltyp(i,j) = 8
@@ -630,6 +630,21 @@ CONTAINS
    IF (stretch_grid) THEN ! read eta_levels
      DO k=1, kde
       grid%znw(k) = model_config_rec%eta_levels(k)
+     ENDDO
+     
+ ! Check the value of the first and last eta level for our domain,
+ ! then check that the vector of eta levels is only decreasing
+ 
+     IF (model_config_rec%eta_levels(1) .NE. 1.0) THEN
+        CALL wrf_error_fatal("--- ERROR: the first specified eta_level is not 1.0")
+     ENDIF
+     IF (model_config_rec%eta_levels(kde) .NE. 0.0) THEN
+        CALL wrf_error_fatal("--- ERROR: the last specified eta_level is not 0.0")
+     ENDIF
+     DO k=2,kde
+       IF (model_config_rec%eta_levels(k) .GT. model_config_rec%eta_levels(k-1)) THEN
+          CALL wrf_error_fatal("--- ERROR: specified eta_levels are not uniformly decreasing from 1.0 to 0.0")
+       ENDIF
      ENDDO
    ELSE
      DO k=1, kde
