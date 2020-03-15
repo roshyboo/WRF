@@ -1,0 +1,13 @@
+Encountered memory errors during build on March 15, 2020.
+Needed to create a swapfile to work around it:
+
+Before compiling:
+
+sudo dd if=/dev/zero of=/swapfile bs=64M count=16
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+After build completes:
+
+sudo swapoff /swapfile
+sudo rm /swapfile
