@@ -51,12 +51,13 @@
 &physics
     physics_suite = 'CONUS'
     mp_physics = -1, -1, -1
-    cu_physics = -1, -1, 0
+    cu_physics = 16, 16, 16
     ra_lw_physics = -1, -1, -1
     ra_sw_physics = -1, -1, -1
     bl_pbl_physics = 10, 10, 10
     sf_sfclay_physics = 10, 10, 10
     sf_surface_physics = -1, -1, -1
+    sf_surface_mosaic = 1
     radt = 30, 30, 30
     bldt = 0, 0, 0
     cudt = 5, 5, 5
