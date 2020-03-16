@@ -9,8 +9,8 @@
     start_hour = 0
     end_year = 2020
     end_month = 3
-    end_day = 17
-    end_hour = 0
+    end_day = 15
+    end_hour = 6
     interval_seconds = 21600
     input_from_file = .true., .true., .true.
     history_interval = 60, 60, 60
@@ -62,7 +62,7 @@
     bldt = 0, 0, 0
     cudt = 5, 5, 5
     swint_opt = 1
-    cldovrlp = 5
+    cldovrlp = 4
     icloud = 1
     num_land_cat = 21
     sf_urban_physics = 0, 0, 0
