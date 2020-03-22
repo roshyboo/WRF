@@ -59,18 +59,25 @@
  scm_vert_adv                        = .false.
  /
 
- &physics
- mp_physics                          = 2,
- ra_lw_physics                       = 1,
- ra_sw_physics                       = 1,
- radt                                = 0,
- sf_sfclay_physics                   = 1,
- sf_surface_physics                  = 2,
- bl_pbl_physics                      = 1,
- bldt                                = 0,
- cu_physics                          = 0,
- cudt                                = 0,
- /
+&physics
+ mp_physics = 6
+ cu_physics = 16
+ ra_lw_physics = 4
+ ra_sw_physics = 4
+ bl_pbl_physics = 10
+ sf_sfclay_physics = 10
+ sf_surface_physics = 2
+ sf_surface_mosaic = 1
+ radt = 30
+ bldt = 0
+ cudt = 5
+ grav_settling = 2
+ iz0tlnd = 1
+ swint_opt = 1
+ cldovrlp = 4
+ icloud = 1
+ sf_urban_physics = 0
+/
 
  &dynamics
  hybrid_opt                          = 0, 
