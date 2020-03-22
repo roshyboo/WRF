@@ -10,7 +10,7 @@ CONTAINS
                  ,bldt,curr_secs,adapt_step_flag                   &
                  ,bldtacttime                                      & 
                  ,rublten,rvblten,rthblten                         &
-                 ,tsk,xland,znt                                    &
+                 ,tsk,xland,znt,z0t,z0q                            &
 #if (HWRF==1)
                  ,msang,scurx,scury,iwavecpl,lcurr_sf              &
                  ,mznt                                             &
@@ -502,7 +502,9 @@ CONTAINS
                                                            SCURY, &
                                                            MSANG
 #endif
-
+   REAL,       DIMENSION( ims:ime, jms:jme )                    , &
+               INTENT(IN)       ::                           z0t, &
+                                                             z0q
 !
    REAL,       DIMENSION( ims:ime, jms:jme )                    , &
                INTENT(INOUT)    ::                           TSK, &
@@ -1145,10 +1147,11 @@ CONTAINS
               ,g=g,cp=cp,rcp=rcp,r_d=r_d,r_v=r_v,cpv=cpv                    &
               ,Z=z,XLV=XLV,PSFC=PSFC               &
               ,P_TOP=p_top                                          &
-              ,ZNT=znt,HT=ht,UST=ust,ZOL=zol,HOL=hol,HPBL=pblh      &
+              ,ZNT=znt,z0t=z0t,z0q=z0q                              &
+              ,HT=ht,UST=ust,ZOL=zol,HOL=hol,HPBL=pblh              &
               ,PSIM=psim,PSIH=psih,XLAND=xland                      &
               ,HFX=hfx,QFX=qfx,TSK=tskold,QSFC=qsfc,GZ1OZ0=gz1oz0   &
-              ,U10=u10,V10=v10,T2=t2                                &
+              !,U10=u10,V10=v10,T2=t2                                &
               ,WSPD=wspd,BR=br,DT=dtbl,DTMIN=dtmin,KPBL2D=kpbl      &
               ,SVP1=svp1,SVP2=svp2,SVP3=svp3,SVPT0=svpt0            &
               ,EP1=ep_1,EP2=ep_2,KARMAN=karman,EOMEG=eomeg          &

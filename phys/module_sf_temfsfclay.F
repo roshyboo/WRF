@@ -5,17 +5,17 @@ MODULE module_sf_temfsfclay
 CONTAINS
 
 !-------------------------------------------------------------------
-   SUBROUTINE temfsfclay(u3d,v3d,th3d,qv3d,p3d,pi3d,rho,z,ht,         &
+   SUBROUTINE temfsfclay(u3d,v3d,th3d,qv3d,p3d,pi3d,rho,z,ht,      &
                      cp,g,rovcp,r,xlv,psfc,chs,chs2,cqs2,cpm,      &
-                     znt,ust,mavail,xland,                         &
+                     znt,z0t,z0q,ust,mavail,xland,                         &
                      hfx,qfx,lh,tsk,flhc,flqc,qgh,qsfc,            &
                      u10,v10,th2,t2,q2,                            &
                      svp1,svp2,svp3,svpt0,ep1,ep2,                 &
-                     karman,fCor,te_temf,                          &
-                     hd_temf,exch_temf,wm_temf,                           &
+                     iz0tlnd,itimestep,karman,fCor,te_temf,        &
+                     hd_temf,exch_temf,wm_temf,                    &
                      ids,ide, jds,jde, kds,kde,                    &
                      ims,ime, jms,jme, kms,kme,                    &
-                     its,ite, jts,jte, kts,kte                    &
+                     its,ite, jts,jte, kts,kte                     &
                      )
 !-------------------------------------------------------------------
       IMPLICIT NONE
@@ -92,14 +92,15 @@ CONTAINS
 !-------------------------------------------------------------------
       INTEGER,  INTENT(IN )   ::        ids,ide, jds,jde, kds,kde, &
                                         ims,ime, jms,jme, kms,kme, &
-                                        its,ite, jts,jte, kts,kte
+                                        its,ite, jts,jte, kts,kte, &
+                                        iz0tlnd, itimestep
 !                                                               
       REAL,     DIMENSION( ims:ime, kms:kme, jms:jme )           , &
                 INTENT(IN   ) :: u3d, v3d, th3d, qv3d, p3d, pi3d, rho, z
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
                 INTENT(IN   ) :: mavail, xland, tsk, fCor, ht, psfc, znt
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
-                INTENT(INOUT) :: hfx, qfx, lh, flhc, flqc
+                INTENT(INOUT) :: hfx, qfx, lh, flhc, flqc, z0t, z0q
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
                 INTENT(INOUT) :: ust, chs2, cqs2, chs, cpm, qgh, qsfc
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
@@ -126,21 +127,24 @@ CONTAINS
       DO J=jts,jte
 
         CALL temfsfclay1d(j,u1d=u3d(ims,kms,j),v1d=v3d(ims,kms,j),     &
-                th1d=th3d(ims,kms,j),qv1d=qv3d(ims,kms,j),p1d=p3d(ims,kms,j), &
+                th1d=th3d(ims,kms,j),qv1d=qv3d(ims,kms,j), &
+                p1d=p3d(ims,kms,j), &
                 pi1d=pi3d(ims,kms,j),rho=rho(ims,kms,j),z=z(ims,kms,j),&
                 zsrf=ht(ims,j),      &
                 cp=cp,g=g,rovcp=rovcp,r=r,xlv=xlv,psfc=psfc(ims,j),    &
                 chs=chs(ims,j),chs2=chs2(ims,j),cqs2=cqs2(ims,j),      &
-                cpm=cpm(ims,j),znt=znt(ims,j),ust=ust(ims,j),          &
+                cpm=cpm(ims,j),znt=znt(ims,j),z0t=z0t(ims,j),          &
+                z0q=z0q(ims,j),ust=ust(ims,j),                         &
                 mavail=mavail(ims,j),xland=xland(ims,j),    &
                 hfx=hfx(ims,j),qfx=qfx(ims,j),lh=lh(ims,j),tsk=tsk(ims,j), &
                 flhc=flhc(ims,j),flqc=flqc(ims,j),qgh=qgh(ims,j),      &
                 qsfc=qsfc(ims,j),u10=u10(ims,j),v10=v10(ims,j),        &
                 th2=th2(ims,j),t2=t2(ims,j),q2=q2(ims,j),        &
                 svp1=svp1,svp2=svp2,svp3=svp3,svpt0=svpt0,             &
-                ep1=ep1,ep2=ep2,karman=karman,fCor=fCor(ims,j),  &
-                te_temfx=te_temf(ims,kms,j),hd_temfx=hd_temf(ims,j), &
-                exch_temfx=exch_temf(ims,j),wm_temfx=wm_temf(ims,j), &
+                ep1=ep1,ep2=ep2,iz0tlnd=iz0tlnd,                       &
+                itimestep=itimestep,karman=karman,fCor=fCor(ims,j),    &
+                te_temfx=te_temf(ims,kms,j),hd_temfx=hd_temf(ims,j),   &
+                exch_temfx=exch_temf(ims,j),wm_temfx=wm_temf(ims,j),   &
                 ids=ids,ide=ide, jds=jds,jde=jde, kds=kds,kde=kde,     &
                 ims=ims,ime=ime, jms=jms,jme=jme, kms=kms,kme=kme,     &
                 its=its,ite=ite, jts=jts,jte=jte, kts=kts,kte=kte      &
@@ -153,11 +157,11 @@ CONTAINS
 !-------------------------------------------------------------------
    SUBROUTINE temfsfclay1d(j,u1d,v1d,th1d,qv1d,p1d, &
                 pi1d,rho,z,zsrf,cp,g,rovcp,r,xlv,psfc,    &
-                chs,chs2,cqs2,cpm,znt,ust,          &
+                chs,chs2,cqs2,cpm,znt,z0t,z0q,ust,        &
                 mavail,xland,hfx,qfx,lh,tsk, &
                 flhc,flqc,qgh,qsfc,u10,v10,        &
                 th2,t2,q2,svp1,svp2,svp3,svpt0,             &
-                ep1,ep2,karman,fCor,  &
+                ep1,ep2,iz0tlnd,itimestep,karman,fCor,  &
                 te_temfx,hd_temfx,exch_temfx,wm_temfx,       &
                 ids,ide, jds,jde, kds,kde,                    &
                 ims,ime, jms,jme, kms,kme,                    &
@@ -169,14 +173,13 @@ CONTAINS
       INTEGER,  INTENT(IN   ) ::        ids,ide, jds,jde, kds,kde, &
                                         ims,ime, jms,jme, kms,kme, &
                                         its,ite, jts,jte, kts,kte, &
-                                        j
-                                                               
+                                        j, iz0tlnd, itimestep
       REAL,     DIMENSION( ims:ime ), INTENT(IN   ) ::             &
                                         u1d,v1d,qv1d,p1d,th1d,pi1d,rho,z,zsrf
       REAL,     INTENT(IN   ) ::        cp,g,rovcp,r,xlv
       REAL,     DIMENSION( ims:ime ), INTENT(IN   ) :: psfc,znt
       REAL,     DIMENSION( ims:ime ), INTENT(INOUT) ::             &
-                                        chs,chs2,cqs2,cpm,ust
+                                        chs,chs2,cqs2,cpm,ust,z0t,z0q
       REAL,     DIMENSION( ims:ime ), INTENT(IN   ) :: mavail,xland 
       REAL,     DIMENSION( ims:ime ), INTENT(INOUT) ::             &
                                         hfx,qfx,lh
@@ -214,7 +217,6 @@ CONTAINS
    integer :: i
    real :: e1
    real, dimension( its:ite)    ::  wstr, ang, wm
-   real, dimension( its:ite)    ::  z0t
    real, dimension( its:ite) :: dthdz, dqtdz, dudz, dvdz
    real, dimension( its:ite) :: lepsmin
    real, dimension( its:ite) :: thetav
@@ -224,6 +226,7 @@ CONTAINS
    real, dimension( its:ite) :: ustrtilde, linv, leps
    real, dimension( its:ite) :: km, kh
    real, dimension( its:ite) :: qsfc_air
+   real, dimension( its:ite) :: t1d,tc1d,visc,restar
 !!-------------------------------------------------------------------
 
 !!!!!!! ******
@@ -238,17 +241,53 @@ CONTAINS
       thetav(i) = (tsk(i)/pi1d(i)) * (1. + 0.608*qsfc_air(i))  ! WA Assumes ql(env)=0, what if it isn't?
       ! WA TEST (R5) set z0t = z0
       ! z0t(i) = znt(i) / 10.0   ! WA this is hard coded in Matlab version
-      z0t(i) = znt(i)
+
+      ! EAK, taken from MYNN SF:
+      ! COMPUTE ROUGHNESS REYNOLDS NUMBER (restar) USING ZNT
+      ! AHW: Garrattt formula: Calculate roughness Reynolds number
+      !      Kinematic viscosity of air (linear approx to
+      !      temp dependence at sea level)
+
+      if (itimestep==1) then
+         ust(i)=MAX(0.025*SQRT(u1d(i)*u1d(i) + v1d(i)*v1d(i)),0.001)
+      end if
+
+      ! COMPUTE KINEMATIC VISCOSITY (m2/s) Andreas (1989) CRREL Rep. 89-11
+      ! valid between -173 and 277 degrees C.
+      t1d(i)  = th1d(i)*pi1d(i)
+      tc1d(i) = t1d(i) - 273.15
+      visc(i) = 1.326e-5*(1. + 6.542e-3*tc1d(i) + 8.301e-6*tc1d(i)*tc1d(i) &
+                        - 4.84e-9*tc1d(i)*tc1d(i)*tc1d(i))
+
+      restar(i)=MAX(ust(i)*znt(i)/visc(i), 0.1)
+
+      ! EAK Do not equate thermal, moisture, and kinematic roughness lengths.
+      ! z0t(i) = znt(i)
+      CALL zilitinkevich_1995(znt(i),z0t(i),z0q(i),restar(i),&
+                              ust(i),karman,xland(i),iz0tlnd)
 
       ! Get height and delta at turbulence levels and mass levels
       zt(i) = (z(i) - zsrf(i) - znt(i)) / 2.
       zm(i) = z(i) - zsrf(i)
 
-      ! Gradients at first level
-      dthdz(i) = (th1d(i)-(tsk(i)/pi1d(i))) / (zt(i) * log10(zm(i)/z0t(i)))
-      dqtdz(i) = (qv1d(i)-qsfc_air(i)) / (zt(i) * log10(zm(i)/z0t(i)))
-      dudz(i) = u1d(i) / (zt(i) * log10(zm(i)/znt(i)))
-      dvdz(i) = v1d(i) / (zt(i) * log10(zm(i)/znt(i)))
+      ! Gradients at first turbulence level (zt)
+      ! EAK: These used to be log10, but the log wind profile is ln, not log10.
+      ! To get the equation for dudz at z=zt, take vertical derivative of
+      ! (u_star/karman)*[ln(zt/znt)]. This equals u_star/(karman*zt).
+      ! Then assume u_star/karman is constant in the surface layer and 
+      ! replace it with u1d/ln(zm/znt), from the log wind profile evaluated
+      ! at z=zm. Note: Really should include a stability correction in the log
+      ! wind profile (see equation 4.15 in Stull). This requires knowing the
+      ! Obhukov length, which could be calculated using u_star from the previous
+      ! timestep. If itimestep==1, could square the u and v wind components
+      ! to get an estimate of ustar (see MYNN surface layer for an example
+      ! of this).
+      ! Not entirely clear on whether dthdz and dqtdz should also use a
+      ! natural log profile in the surface layer, but leaving this for now.
+      dthdz(i) = (th1d(i)-(tsk(i)/pi1d(i))) / (zt(i) * log(zm(i)/z0t(i)))
+      dqtdz(i) = (qv1d(i)-qsfc_air(i)) / (zt(i) * log(zm(i)/z0q(i)))
+      dudz(i) = u1d(i) / (zt(i) * log(zm(i)/znt(i)))
+      dvdz(i) = v1d(i) / (zt(i) * log(zm(i)/znt(i)))
 
       ! WA doing this because te_temf may not be initialized,
       ! would be better to do it in initialization routine but it's 
@@ -347,7 +386,7 @@ CONTAINS
       ! These formulae are the same as what's used above to get surface
       ! flux from surface temperature and specific humidity.
       flhc(i) = rho(i) * cp * fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(zm(i)/z0t(i)) / zt(i)
-      flqc(i)  = rho(i) * fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(zm(i)/z0t(i)) / zt(i) * mavail(i)
+      flqc(i)  = rho(i) * fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(zm(i)/z0q(i)) / zt(i) * mavail(i)
       exch_temfx(i)  = flqc(i) / mavail(i)
       chs(i) = flqc(i) / rho(i) / mavail(i) 
       ! WA Must exchange coeffs be limited to avoid runaway in some 
@@ -364,15 +403,17 @@ CONTAINS
 
       ! Populate 10 m winds and 2 m temp and 2 m exchange coeffs
       ! WA Note this only works if first mass level is above 10 m
+      ! EAK: use znt to compute winds only. Then use z0t and z0q for
+      ! temperature and moisture, respectively.
       u10(i) = u1d(i) * log(10.0/znt(i)) / log(zm(i)/znt(i))
       v10(i) = v1d(i) * log(10.0/znt(i)) / log(zm(i)/znt(i))
       t2(i) = (tsk(i)/pi1d(i) + (th1d(i) - tsk(i)/pi1d(i)) * log(2.0/z0t(i)) / log(zm(i)/z0t(i))) * pi1d(i)  ! WA this should also use pi at z0
       th2(i) = t2(i) / pi1d(i)
-      q2(i) = (qsfc_air(i) + (qv1d(i) - qsfc_air(i)) * log(2.0/znt(i)) / log(zm(i)/znt(i)))
+      q2(i) = (qsfc_air(i) + (qv1d(i) - qsfc_air(i)) * log(2.0/z0q(i)) / log(zm(i)/z0q(i)))
       ! WA are these correct?  Difference between chs2 and cqs2 is unclear
       ! At the moment the only difference is z0t vs. znt
       chs2(i)  = fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(2.0/z0t(i)) / zt(i)
-      cqs2(i)  = fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(2.0/znt(i)) / zt(i)
+      cqs2(i)  = fth(i)/fth0 * wm(i) * leps(i) / PrT0 / log(2.0/z0q(i)) / zt(i)
 
       ! Calculate qgh (saturated at first-level temp) and cpm
       e1=svp1*exp(svp2*((th1d(i)*pi1d(i))-svpt0)/((th1d(i)*pi1d(i))-svp3))
@@ -417,5 +458,67 @@ CONTAINS
    END SUBROUTINE temfsfclayinit
 
 !-------------------------------------------------------------------          
+!-------------------------------------------------------------------          
+   SUBROUTINE zilitinkevich_1995(Z_0,Zt,Zq,restar,ustar,KARMAN,&
+       & landsea,iz0tlnd2)
 
+       ! This subroutine returns the thermal and moisture roughness lengths
+       ! from Zilitinkevich (1995) and Zilitinkevich et al. (2001) over
+       ! land and water, respectively. 
+       !
+       ! MODS:
+       ! 20120705 : added IZ0TLND option. Note: This option was designed
+       !            to work with the Noah LSM and may be specific for that
+       !            LSM only. Tests with RUC LSM showed no improvements. 
+       ! 20200319 : EAK added to TEMF, adapted from MYNN surface layer.
+
+       IMPLICIT NONE
+       REAL, INTENT(IN) :: Z_0,restar,ustar,KARMAN,landsea
+       INTEGER, OPTIONAL, INTENT(IN)::  IZ0TLND2
+       REAL, INTENT(OUT) :: Zt,Zq
+       REAL :: CZIL  !=0.100 in Chen et al. (1997)
+                     !=0.075 in Zilitinkevich (1995)
+                     !=0.500 in Lemone et al. (2008)
+
+       IF (landsea-1.5 .GT. 0) THEN    !WATER
+
+          !THIS IS BASED ON Zilitinkevich, Grachev, and Fairall (2001;
+          !Their equations 15 and 16).
+          IF (restar .LT. 0.1) THEN
+             Zt = Z_0*EXP(KARMAN*2.0)
+             Zt = MIN( Zt, 6.0e-5)
+             Zt = MAX( Zt, 2.0e-9)
+             Zq = Z_0*EXP(KARMAN*3.0)
+             Zq = MIN( Zq, 6.0e-5)
+             Zq = MAX( Zq, 2.0e-9)
+          ELSE
+             Zt = Z_0*EXP(-KARMAN*(4.0*SQRT(restar)-3.2))
+             Zt = MIN( Zt, 6.0e-5)
+             Zt = MAX( Zt, 2.0e-9)
+             Zq = Z_0*EXP(-KARMAN*(4.0*SQRT(restar)-4.2))
+             Zq = MIN( Zt, 6.0e-5)
+             Zq = MAX( Zt, 2.0e-9)
+          ENDIF
+
+       ELSE                             !LAND
+
+          !Option to modify CZIL according to Chen & Zhang, 2009
+          IF ( IZ0TLND2 .EQ. 1 ) THEN
+             CZIL = 10.0 ** ( -0.40 * ( Z_0 / 0.07 ) )
+          ELSE
+             CZIL = 0.075 !0.10
+          END IF
+
+          Zt = Z_0*EXP(-KARMAN*CZIL*SQRT(restar))
+          Zt = MIN( Zt, Z_0/2.)
+
+          Zq = Z_0*EXP(-KARMAN*CZIL*SQRT(restar))
+          Zq = MIN( Zq, Z_0/2.)
+
+       ENDIF
+
+       return
+
+   END SUBROUTINE zilitinkevich_1995
+!--------------------------------------------------------------------
 END MODULE module_sf_temfsfclay

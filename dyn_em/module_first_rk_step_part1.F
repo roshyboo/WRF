@@ -532,6 +532,7 @@ BENCH_START(surf_driver_tim)
      &        ,WSPD=grid%wspd          ,XICE=grid%xice     ,XLAND=grid%xland        &
      &        ,MAX_EDOM=grid%num_ext_model_couple_dom      ,CPLMASK=grid%cplmask    &
      &        ,Z0=grid%z0              ,Z=grid%z        ,ZNT=grid%znt               &
+     &        ,Z0T=grid%z0t            ,Z0Q=grid%z0q                                &
      &        ,ZS=grid%zs              ,ALBSI=grid%albsi , ICEDEPTH=grid%icedepth   &
      &        ,SNOWSI=grid%snowsi                                                   &
      &        ,XICEM=grid%xicem   ,ISICE=grid%landuse_isice                         &
@@ -936,7 +937,7 @@ BENCH_START(pbl_driver_tim)
               ,T2=grid%t2 &
      &        ,WARM_RAIN=grid%warm_rain                    ,WSPD=grid%wspd     &
      &        ,XICE=grid%xice          ,XLAND=grid%xland        ,Z=grid%z                &
-     &        ,ZNT=grid%znt                                                    &
+     &        ,ZNT=grid%znt            ,Z0T=grid%z0t       ,Z0Q=grid%z0q       &
      &        ,ysu_topdown_pblmix=config_flags%ysu_topdown_pblmix              &
      &        ,shinhong_tke_diag=config_flags%shinhong_tke_diag               &
 ! paj: topo_wind

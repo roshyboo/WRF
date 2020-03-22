@@ -14,12 +14,11 @@ contains
                   g,cp,rcp,r_d,r_v,cpv,                                   &
                   z,xlv,psfc,                                          &
                   p_top,                                               &
-                  znt,ht,ust,zol,hol,hpbl,psim,psih,                         &
+                  znt,z0t,z0q,ht,ust,zol,hol,hpbl,psim,psih,                   &
                   xland,hfx,qfx,tsk,qsfc,gz1oz0,wspd,br,                    &
                   dt,dtmin,kpbl2d,                                             &
                   svp1,svp2,svp3,svpt0,ep1,ep2,karman,eomeg,stbolt,            &
                   kh_temf,km_temf,                                            &
-                  u10,v10,t2,                                                  &
                   te_temf,shf_temf,qf_temf,uw_temf,vw_temf,                    &
                   wupd_temf,mf_temf,thup_temf,qtup_temf,qlup_temf,            &
                   cf3d_temf,cfm_temf,                                         &
@@ -87,6 +86,8 @@ contains
 !-- r_v 		gas constant for water vapor (j/kg/k)
 !-- psfc        pressure at the surface (pa)
 !-- znt		roughness length (m)
+!-- z0t         thermal roughness length from sfc layer (m)
+!-- z0q         moisture roughness length from sfc layer (m)
 !-- ht          terrain height ASL (m)
 !-- ust		u* in similarity theory (m/s)
 !-- zol		z/l height over monin-obukhov length
@@ -174,8 +175,6 @@ contains
 !
    real,     dimension( ims:ime, kms:kme, jms:jme )                          , &
              intent(inout)   ::      kh_temf, km_temf
-   real,     dimension( ims:ime, jms:jme )                                   , &
-             intent(inout)   ::      u10, v10, t2
 !
    real,     dimension( ims:ime, jms:jme )                                   , &
              intent(in   )   ::      xland, &
@@ -185,9 +184,9 @@ contains
    real,     dimension( ims:ime, jms:jme )                                   , &
              intent(inout)   ::      hfx, qfx
    real,     dimension( ims:ime, jms:jme )                                   , &
-             intent(inout)   ::      hol, ust, hpbl, znt, wspd, zol
+             intent(inout)   ::      hol, hpbl, wspd, zol
    real,     dimension( ims:ime, jms:jme )                                   , &
-             intent(in   )   ::      ht
+             intent(in   )   ::      ht, ust, znt, z0t, z0q
 !
   real,      dimension( ims:ime, kms:kme, jms:jme )                          , &
              intent(in   )   ::      u3d, v3d
@@ -220,7 +219,8 @@ contains
               ,g=g,cp=cp,rcp=rcp,r_d=r_d,r_v=r_v,cpv=cpv            &
               ,z2d=z(ims,kms,j)                         &
               ,xlv=xlv                                                   &
-              ,psfcpa=psfc(ims,j),znt=znt(ims,j),zsrf=ht(ims,j),ust=ust(ims,j) &
+              ,psfcpa=psfc(ims,j),znt=znt(ims,j),z0t=z0t(ims,j),z0q=z0q(ims,j) &
+              ,zsrf=ht(ims,j),ust=ust(ims,j) &
               ,zol=zol(ims,j),hol=hol(ims,j),hpbl=hpbl(ims,j)                  &
               ,psim=psim(ims,j)                           &
               ,psih=psih(ims,j),xland=xland(ims,j)                             &
@@ -232,7 +232,6 @@ contains
               ,ep1=ep1,ep2=ep2,karman=karman,eomeg=eomeg                       &
               ,stbolt=stbolt                                                   &
               ,kh_temfx=kh_temf(ims,kms,j),km_temfx=km_temf(ims,kms,j)         &
-              ,u10=u10(ims,j),v10=v10(ims,j),t2=t2(ims,j)                      &
               ,te_temfx=te_temf(ims,kms,j)                                     &
               ,shf_temfx=shf_temf(ims,kms,j),qf_temfx=qf_temf(ims,kms,j)       &
               ,uw_temfx=uw_temf(ims,kms,j),vw_temfx=vw_temf(ims,kms,j)       &
@@ -259,12 +258,11 @@ contains
                   g,cp,rcp,r_d,r_v,cpv,                            &
                   z2d,                                                  &
                   xlv,psfcpa,                                    &
-                  znt,zsrf,ust,zol,hol,hpbl,psim,psih,                      &
+                  znt,z0t,z0q,zsrf,ust,zol,hol,hpbl,psim,psih,                 &
                   xland,hfx,qfx,tsk,qsfc,gz1oz0,wspd,br,                   &
                   dt,dtmin,kpbl1d,                                             &
                   svp1,svp2,svp3,svpt0,ep1,ep2,karman,eomeg,stbolt,            &
                   kh_temfx,km_temfx,                                         &
-                  u10,v10,t2,                                                 &
                   te_temfx,shf_temfx,qf_temfx,uw_temfx,vw_temfx,               &
                   wupd_temfx,mf_temfx,thup_temfx,qtup_temfx,qlup_temfx,       &
                   cf3d_temfx,cfm_temfx,                                        &
@@ -324,9 +322,9 @@ contains
                                      rqvbltenx, rqcbltenx, rqibltenx
 !
    real,     dimension( ims:ime )                                            , &
-             intent(inout)   ::      hol, ust, hpbl, znt
+             intent(inout)   ::      hol, hpbl
    real,     dimension( ims:ime )                                            , &
-             intent(in   )   ::      xland, zsrf
+             intent(in   )   ::      xland, zsrf, ust, znt, z0t, z0q
    real,     dimension( ims:ime )                                            , &
              intent(inout)   ::      hfx, qfx
 !
@@ -343,8 +341,6 @@ contains
    real,     dimension( ims:ime, kms:kme )                                   , &
              intent(inout)   ::        kh_temfx, km_temfx
 !
-   real,     dimension( ims:ime )                                            , &
-             intent(inout)    ::        u10, v10, t2
 !
 !
 !-----------------------------------------------------------
@@ -380,7 +376,6 @@ contains
    real, dimension( its:ite)    ::  hd,lcl,hct,ht
    real, dimension( its:ite)    ::  convection_TKE_surface_src, sfcFTE
    real, dimension( its:ite)    ::  sfcTHVF
-   real, dimension( its:ite)    ::  z0t
    integer, dimension( its:ite) ::  hdidx,lclidx,hctidx,htidx
    integer, dimension( its:ite) ::  hmax_idx
    integer, dimension( its:ite) ::  tval
@@ -473,7 +468,8 @@ contains
       chi_poisson(i,1) = rcp * (1.+rv(i,1)/ep2) / (1.+rv(i,1)*cpv/cp)
       gam(i,1) = rv(i,1) * r_v / (cp + rv(i,1)*cpv)
       thetav(i,1) = thetal(i,1) * (1. + 0.608*qt(i,1) - qcx(i,1))  ! WA 4/6/10 allow environment liquid
-      z0t(i) = znt(i)
+      ! EAK Do not equate the thermal, moisture, and kinematic roughness lengths.
+      ! z0t(i) = znt(i)
 
       ! Convert incoming theta to thetal and qv,qc to qt
       ! NOTE this is where the indexing gets changed from WRF to TEMF basis
@@ -516,10 +512,13 @@ contains
       dzt(i,kte) = dzt(i,kte-1)    ! WA 12/23/09
 
       ! Gradients at first level
-      dthdz(i,1) = (thetal(i,2)-thetal(i,1)) / (zt(i,1) * log10(zm(i,2)/z0t(i)))
-      dqtdz(i,1) = (qt(i,2)-qt(i,1)) / (zt(i,1) * log10(zm(i,2)/z0t(i)))
-      dudz(i,1) = (u_temf(i,2)-u_temf(i,1)) / (zt(i,1) * log10(zm(i,2)/znt(i)))
-      dvdz(i,1) = (v_temf(i,2)-v_temf(i,1)) / (zt(i,1) * log10(zm(i,2)/znt(i)))
+      ! EAK: These used to be log10, but the log wind profile is ln, not log10.
+      !      Use z0t and z0q (from temf surface layer) for dthdz and dqtdz, not
+      !      znt.
+      dthdz(i,1) = (thetal(i,2)-thetal(i,1)) / (zt(i,1) * log(zm(i,2)/z0t(i)))
+      dqtdz(i,1) = (qt(i,2)-qt(i,1)) / (zt(i,1) * log(zm(i,2)/z0q(i)))
+      dudz(i,1) = (u_temf(i,2)-u_temf(i,1)) / (zt(i,1) * log(zm(i,2)/znt(i)))
+      dvdz(i,1) = (v_temf(i,2)-v_temf(i,1)) / (zt(i,1) * log(zm(i,2)/znt(i)))
 
       ! Surface thetaV flux from Stull p.147
       sfcTHVF(i) = hfx(i)/(rho(i,1)*cp) * (1.+0.608*(qvx(i,1)+qcx(i,1))) + 0.608*thetav(i,1)*qf_temfx(i,1)
@@ -871,12 +870,14 @@ contains
 
          ! Calculate mass flux contributions to fluxes (defined on turb levels)
          ! Use log interpolation at first level
+         ! EAK: was znt, use z0t instead
          MFCth(i,1) = mf_temfx(i,1) * (thup_temfx(i,1)-thetal(i,1) &
             + (thup_temfx(i,2)-thetal(i,2) - &
-            (thup_temfx(i,1)-thetal(i,1))) * log(zt(i,1)/znt(i))/log(zm(i,2)/znt(i)))
+            (thup_temfx(i,1)-thetal(i,1))) * log(zt(i,1)/z0t(i))/log(zm(i,2)/z0t(i)))
+         ! EAK: was znt, use z0q instead
          MFCq(i,1) = mf_temfx(i,1) * (qtup_temfx(i,1)-qt(i,1) &
             + (qtup_temfx(i,2)-qt(i,2) - &
-            (qtup_temfx(i,1)-qt(i,1))) * log(zt(i,1)/znt(i))/log(zm(i,2)/znt(i)))
+            (qtup_temfx(i,1)-qt(i,1))) * log(zt(i,1)/z0q(i))/log(zm(i,2)/z0q(i)))
          MFCu(i,1) = mf_temfx(i,1) * (UUPD(i,1)-u_temf(i,1) &
             + (UUPD(i,2)-u_temf(i,2) - &
             (UUPD(i,1)-u_temf(i,1))) * log(zt(i,1)/znt(i))/log(zm(i,2)/znt(i)))
@@ -992,7 +993,9 @@ contains
       ! WA TEST 11/7/13 use w* as a component of the mean wind inside the
       ! u* calculation instead of in the velocity scale below (Felix)
       ! ust(i) = sqrt(ftau(i,1)/ftau0) * sqrt(u_temf(i,2)**2. + v_temf(i,2)**2.) * leps(i,1) / log(zm(i,2)/znt(i)) / zt(i,1)
-      ust(i) = sqrt(ftau(i,1)/ftau0) * sqrt(u_temf(i,2)**2. + v_temf(i,2)**2. + (0.5*wstr(i))**2.) * leps(i,1) / log(zm(i,2)/znt(i)) / zt(i,1)
+      ! EAK Why recompute ustar when it comes in from the surface layer?
+      ! Commenting out for now.
+      ! ust(i) = sqrt(ftau(i,1)/ftau0) * sqrt(u_temf(i,2)**2. + v_temf(i,2)**2. + (0.5*wstr(i))**2.) * leps(i,1) / log(zm(i,2)/znt(i)) / zt(i,1)
 
       ang(i) = atan2(v_temf(i,2),u_temf(i,2))
       uw_temfx(i,1) = -cos(ang(i)) * ust(i)**2.
@@ -1021,11 +1024,12 @@ contains
          alpha2(i,kt) = 0.61 * (thetal(i,kt) + thetal(i,kt+1)) / 2.
          beta2(i,kt) = (100000. / p2di(i,kt))**0.286 * 2.45e-6 / 1004.67 - 1.61 * (thetal(i,kt) + thetal(i,kt+1)) / 2.
       end do
-      alpha2(i,1) = 0.61 * (thetal(i,1) + (thetal(i,2)-thetal(i,1)) * (zt(i,2) - znt(i)) / (zm(i,2) - znt(i)))
+      ! EAK: was znt, use z0t
+      alpha2(i,1) = 0.61 * (thetal(i,1) + (thetal(i,2)-thetal(i,1)) * (zt(i,2) - z0t(i)) / (zm(i,2) - z0t(i)))
       alpha2(i,kte) = 0.61 * thetal(i,kte)
       beta2(i,1) = (100000. / p2di(i,1))**0.286 * 2.45e-6 / &
          1004.67 - 1.61 * (thetal(i,1) + (thetal(i,2) - thetal(i,1)) &
-         * (zt(i,2) - znt(i)) / (zm(i,2) - znt(i)))
+         * (zt(i,2) - z0t(i)) / (zm(i,2) - z0t(i)))
       beta2(i,kte) = (100000. / p2di(i,kte))**0.286 * 2.45e-6 / 1004.67 - 1.61 * thetal(i,kte)
       if ( is_convective ) then ! Activate EDMF components
          do kt = 1,kte-1
@@ -1150,9 +1154,10 @@ contains
 
       ! Populate 10 m winds and 2 m temp
       ! WA Note this only works if first mass level is above 10 m
-      u10(i) = u_new(i,2) * log(10.0/znt(i)) / log(zm(i,2)/znt(i))
-      v10(i) = v_new(i,2) * log(10.0/znt(i)) / log(zm(i,2)/znt(i))
-      t2(i) = (tsk(i)/pi2d(i,1) + (thx_new(i,1) - tsk(i)/pi2d(i,1)) * log(2.0/z0t(i)) / log(zm(i,2)/z0t(i))) * pi2d(i,1)  ! WA this should also use pi at z0
+      ! EAK: no need to recompute these. already done in surface layer
+      ! u10(i) = u_new(i,2) * log(10.0/znt(i)) / log(zm(i,2)/znt(i))
+      ! v10(i) = v_new(i,2) * log(10.0/znt(i)) / log(zm(i,2)/znt(i))
+      ! t2(i) = (tsk(i)/pi2d(i,1) + (thx_new(i,1) - tsk(i)/pi2d(i,1)) * log(2.0/z0t(i)) / log(zm(i,2)/z0t(i))) * pi2d(i,1)  ! WA this should also use pi at z0
 
       ! Populate diagnostic variables
       hd_temfx(i) = hd(i)

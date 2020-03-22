@@ -33,7 +33,7 @@ CONTAINS
      &          ,t_phy,u10,udrunoff,ust,uz0                           &
      &          ,u_frame,u_phy,v10,vegfra,uoce,voce                   &
      &          ,vz0,v_frame,v_phy,warm_rain,wspd,xice,xland,z,znt    &
-     &          ,max_edom,cplmask                                     &
+     &          ,z0t,z0q,max_edom,cplmask                             &
 #if (HWRF==1)
      &          ,mznt                                                 &
 #endif
@@ -451,8 +451,10 @@ CONTAINS
 !-- XLAND         land mask (1 for land, 2 for water)
 !-- MAX_EDOM      number of external model domains
 !-- CPLMASK       coupling mask (0 for data read in wrflowinput, 1 data received from the coupler)
-!-- ZNT           thermal time-varying roughness length (m)
-!-- MZNT          momentum time-varying roughness length (m)
+!-- ZNT           time-varying roughness length (m)
+!-- z0t           thermal roughness length from temf surface layer (m)
+!-- z0q           moisture roughness length from temf surface layer (m)
+!-- MZNT          HWRF momentum time-varying roughness length (m)
 !-- Z0            background roughness length (m)
 !-- MAVAIL        surface moisture availability (between 0 and 1)
 !-- UST           u* in similarity theory (m/s)
@@ -709,6 +711,8 @@ CONTAINS
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   VZ0
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   WSPD
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   ZNT
+   REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(OUT)::     z0t
+   REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(OUT)::     z0q
 #if (HWRF==1)
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   MZNT
 #endif
@@ -2297,12 +2301,14 @@ CONTAINS
          CALL TEMFSFCLAY(u3d=u_phytmp,v3d=v_phytmp,th3d=th_phy,    &
                qv3d=qv_curr,p3d=p_phy,pi3d=pi_phy,rho=rho,z=z,ht=ht, &
                CP=cp,G=g,ROVCP=rcp,R=r_d,XLV=xlv,psfc=psfc,chs=chs,&
-               chs2=chs2,cqs2=cqs2,CPM=cpm,znt=znt,ust=ust,        &
+               chs2=chs2,cqs2=cqs2,CPM=cpm,znt=znt,               &
+               z0t=z0t,z0q=z0q,ust=ust,                           &
                MAVAIL=mavail,XLAND=xland,HFX=hfx,QFX=qfx,LH=lh,   &
                TSK=tsk,FLHC=flhc,FLQC=flqc,QGH=qgh,qsfc=qsfc,      &
                U10=u10,V10=v10,TH2=th2,T2=t2,Q2=q2,                &
                SVP1=svp1,SVP2=svp2,SVP3=svp3,SVPT0=svpt0,EP1=ep_1, &
-               EP2=ep_2,KARMAN=karman,fCor=fCor,te_temf=te_temf,   &
+               EP2=ep_2,iz0tlnd=iz0tlnd,itimestep=itimestep,       &
+               KARMAN=karman,fCor=fCor,te_temf=te_temf,            &
                hd_temf=hd_temf,exch_temf=exch_temf,wm_temf=wm_temf,&
                ids=ids,ide=ide, jds=jds,jde=jde, kds=kds,kde=kde,  &
                ims=ims,ime=ime, jms=jms,jme=jme, kms=kms,kme=kme,  &
